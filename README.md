@@ -13,6 +13,7 @@
 | `skill\SKILL.md` | skill 本體：流程、安全限制、驅動程式用法 |
 | `skill\templates\report-template.md` | QA 報告範本 |
 | `skill\scripts\browser-driver.mjs` | 瀏覽器驅動程式（約 1000 行，只用 Node 內建模組） |
+| `examples\saucedemo-20261116\` | 實站測試的完整產出：測試計畫、QA 報告、11 張截圖 |
 
 `skill\` 是 2026-11-16 從 `%USERPROFILE%\.claude\skills\qa-report\` 複製出來的副本。Claude Code 實際讀的是後者，改了其中一邊要記得同步另一邊。
 
@@ -86,7 +87,7 @@
 
 ### 實站測試
 
-用整個 skill 對一個公開的自動化測試練習網站（`https://www.saucedemo.com/`，React 單頁應用）跑了一輪，測登入與購物結帳兩條流程，約 60 個瀏覽器動作，產出測試計畫、11 張截圖與一份報告。
+用整個 skill 對一個公開的自動化測試練習網站（`https://www.saucedemo.com/`，React 單頁應用）跑了一輪，測登入與購物結帳兩條流程，約 60 個瀏覽器動作，產出測試計畫、11 張截圖與一份報告。完整產出在 `examples\saucedemo-20261116\`。
 
 | 項目 | 結果 |
 |---|---|
