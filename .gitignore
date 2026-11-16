@@ -1,0 +1,9 @@
+# QA 報告與截圖可能含測試畫面，不進版控
+qa-reports/
+screenshots/
+*.png
+
+# 暫存與系統檔
+*.tmp
+Thumbs.db
+.DS_Store
