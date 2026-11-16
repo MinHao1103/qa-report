@@ -7,3 +7,7 @@ screenshots/
 *.tmp
 Thumbs.db
 .DS_Store
+
+# 範例報告是公開練習站的測試結果，刻意納入版控
+!examples/**/screenshots/
+!examples/**/*.png
