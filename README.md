@@ -12,7 +12,7 @@
 | `SECURITY-REVIEW.md` | 送資安複核用的說明與檢查清單 |
 | `skill\SKILL.md` | skill 本體：流程、安全限制、驅動程式用法 |
 | `skill\templates\report-template.md` | QA 報告範本 |
-| `skill\scripts\browser-driver.mjs` | 瀏覽器驅動程式（約 700 行，只用 Node 內建模組） |
+| `skill\scripts\browser-driver.mjs` | 瀏覽器驅動程式（約 1000 行，只用 Node 內建模組） |
 
 `skill\` 是 2026-11-16 從 `%USERPROFILE%\.claude\skills\qa-report\` 複製出來的副本。Claude Code 實際讀的是後者，改了其中一邊要記得同步另一邊。
 

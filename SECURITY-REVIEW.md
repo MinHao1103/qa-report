@@ -8,7 +8,7 @@
 |---|---|---|
 | `skill\SKILL.md` | 純文字 prompt | 無可執行內容 |
 | `skill\templates\report-template.md` | 純文字範本 | 無可執行內容 |
-| `skill\scripts\browser-driver.mjs` | 可執行腳本 | 單一檔案，約 700 行，可逐行審閱 |
+| `skill\scripts\browser-driver.mjs` | 可執行腳本 | 單一檔案，約 1000 行，可逐行審閱 |
 
 ## 它會做什麼
 
