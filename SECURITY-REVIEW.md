@@ -1,14 +1,17 @@
 # qa-report 資安複核說明
 
-本工具會控制瀏覽器並處理測試帳號登入，公司專案使用前請通過 Code Review / 資安複核。本文件整理複核時需要的資訊，狀態為「待複核」。
+本工具會控制受測環境並處理測試帳號登入，公司專案使用前請通過 Code Review / 資安複核。本文件整理複核時需要的資訊，狀態為「待複核」。
+
+skill 的流程與平台無關，可執行的部分只有驅動程式。目前唯一的驅動程式是網頁驅動程式，本文件「它會做什麼」以下的內容都是針對它。之後每新增一個驅動程式，都要比照本文件另外送審。
 
 ## 送審範圍
 
 | 檔案 | 性質 | 說明 |
 |---|---|---|
 | `skill\SKILL.md` | 純文字 prompt | 無可執行內容 |
+| `skill\drivers\README.md`、`skill\drivers\web.md` | 純文字說明 | 無可執行內容 |
 | `skill\templates\report-template.md` | 純文字範本 | 無可執行內容 |
-| `skill\scripts\browser-driver.mjs` | 可執行腳本 | 單一檔案，約 1000 行，可逐行審閱 |
+| `skill\scripts\browser-driver.mjs` | 可執行腳本（網頁驅動程式） | 單一檔案，約 1000 行，可逐行審閱 |
 
 ## 它會做什麼
 

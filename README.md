@@ -1,6 +1,8 @@
-# qa-report：只測不修的網站 QA skill
+# qa-report：只測不修的 QA skill
 
-給 Claude Code 用的自製 skill。實際操作瀏覽器走過指定流程，產出附截圖與重現步驟的問題報告，不修改任何程式碼。
+給 Claude Code 用的自製 skill。實際操作受測對象走過指定流程，產出附截圖與重現步驟的問題報告，不修改任何程式碼。
+
+測試流程與平台無關，「操作畫面」交給可替換的驅動程式。目前內建網頁驅動程式，其他平台照同一份介面新增即可。
 
 全部自行開發，沒有使用任何第三方 skill pack 的程式碼或 prompt 文字，也沒有 npm 依賴。
 
@@ -10,16 +12,31 @@
 |---|---|
 | `README.md` | 本文件：安裝、用法、設計、測試結果、限制 |
 | `SECURITY-REVIEW.md` | 送資安複核用的說明與檢查清單 |
-| `skill\SKILL.md` | skill 本體：流程、安全限制、驅動程式用法 |
+| `skill\SKILL.md` | skill 本體：與平台無關的流程、安全限制、驅動程式的選擇方式 |
+| `skill\drivers\README.md` | 驅動程式的介面、共同規則、新增步驟 |
+| `skill\drivers\web.md` | 網頁驅動程式的指令與使用規則 |
 | `skill\templates\report-template.md` | QA 報告範本 |
-| `skill\scripts\browser-driver.mjs` | 瀏覽器驅動程式（約 1000 行，只用 Node 內建模組） |
-| `examples\saucedemo-20261116\` | 實站測試的完整產出：測試計畫、QA 報告、11 張截圖 |
+| `skill\scripts\browser-driver.mjs` | 網頁驅動程式（約 1000 行，只用 Node 內建模組） |
+| `examples\saucedemo-20261116\` | 用網頁驅動程式實測的完整產出：測試計畫、QA 報告、11 張截圖 |
 
 `skill\` 是 2026-11-16 從 `%USERPROFILE%\.claude\skills\qa-report\` 複製出來的副本。Claude Code 實際讀的是後者，改了其中一邊要記得同步另一邊。
 
+## 支援的平台
+
+| 平台 | 狀態 |
+|---|---|
+| 網站、可在瀏覽器開啟的前端（含 Cordova App 的網頁層，搭配手機尺寸） | 內建驅動程式 |
+| Android App | 尚未提供。可用 Android 官方的 `adb` 工具實作 |
+| iOS App | 尚未提供。需要 macOS 與 Xcode 才能實作 |
+| 桌面應用程式、API、命令列工具 | 尚未提供 |
+
+受測平台沒有驅動程式時，skill 不會假裝測過：它改做不需要操作畫面的檢查，並在報告的「未測範圍」寫明。
+
+新增平台的方式見 `skill\drivers\README.md`。
+
 ## 安裝
 
-需求：Claude Code、Node 22 以上、本機已安裝 Edge 或 Chrome。
+需求：Claude Code、Node 22 以上。使用網頁驅動程式另需本機已安裝 Edge 或 Chrome。
 
 把 `skill\` 的內容複製到下列其中一個位置，重開 Claude Code 即可：
 
@@ -30,9 +47,11 @@
 
 ## 用法
 
+以網站為例：
+
 1. 啟動專案的 dev server。
 2. 需要登入時，先把測試密碼設成使用者層級的環境變數（例如 `QA_PWD`），再啟動 Claude Code。對話中途才設的讀不到。
-3. 在 Claude Code 輸入 `/qa-report`，加上網址和要測的流程，例如：
+3. 在 Claude Code 輸入 `/qa-report`，加上受測對象和要測的流程，例如：
 
    ```
    /qa-report http://localhost:4200 測登入後的轉帳流程，帳號 <TEST_ACCOUNT>，密碼在 QA_PWD
@@ -40,7 +59,7 @@
 
 4. 報告預設寫到 `%USERPROFILE%\qa-reports\<專案名>\<時間戳>\`，放在 repo 之外，避免截圖被掃進 commit。
 
-沒指定測試範圍時，它會依未 commit 的變更推斷受影響頁面，列給你確認後才測。
+沒指定測試範圍時，它會依未 commit 的變更推斷受影響的畫面，列給你確認後才測。
 
 ## 用公開練習站試跑
 
@@ -73,13 +92,15 @@
 
 ## 流程摘要
 
-1. 確認輸入：網址（限本機或開發環境）、範圍、測試帳號。
+1. 確認輸入：受測對象（限本機或開發環境）、範圍、測試帳號。
 2. 每條流程先寫測試計畫：入口、預期結果、風險點、結束條件。
-3. 逐條操作四類情境：正常路徑、輸入檢核、邊界值、中斷與回復。每個檢查點截圖並檢查 console 與 network。
+3. 逐條操作四類情境：正常路徑、輸入檢核、邊界值、中斷與回復。每個檢查點截圖並檢查執行紀錄與網路紀錄。
 4. 發現異常先重現一次，重現得出來才列為問題。
 5. 依範本產出報告，分必修／建議修／可不修，並必填「未測範圍」。
 
-## 驅動程式的設計
+## 網頁驅動程式的設計
+
+下表是內建網頁驅動程式的做法。其中的原則（不擴大範圍、不碰既有資料、密碼不落地、不常駐）是所有驅動程式都要守的，列在 `skill\drivers\README.md`。
 
 | 設計 | 做法 |
 |---|---|
@@ -92,7 +113,7 @@
 | 不留常駐程序 | 測試期間有一個背景行程，`stop` 或閒置 15 分鐘後結束 |
 | 降低瀏覽器自身連線 | 關閉同步、背景連線、元件更新、擴充套件 |
 
-指令一覽見 `skill\SKILL.md` 的「瀏覽器操作」一節，或 `browser-driver.mjs` 檔頭。
+指令一覽見 `skill\drivers\web.md`，或 `browser-driver.mjs` 檔頭。
 
 ## 測試結果（2026-11-16）
 
@@ -158,5 +179,6 @@
 ## 後續可以做的
 
 - 在真實專案跑一輪，依結果調整。
+- 依需要新增其他平台的驅動程式（Android、iOS、API）。
 - 過 Code Review 與資安複核後，放進團隊共用的 skill repo。
 - 同系列的其他 skill：架構面 plan review、需求面 plan review、retro。
