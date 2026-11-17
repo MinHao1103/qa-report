@@ -17,24 +17,31 @@
 
 在這個 GitHub 頁面按綠色的 **Code** 按鈕，選 **Download ZIP**，下載後解壓縮。
 
-解壓縮後會得到一個叫 `qa-report-main` 的資料夾。下面假設你把它放在 `D:\qa-report-main`，放在別的地方就把路徑換掉。
+解壓縮後會得到一個叫 `qa-report-main` 的資料夾，放在哪裡都可以。
 
 ### 第 2 步：安裝
 
-把 `qa-report-main\skill` 裡面的所有東西，複製到 `C:\Users\你的帳號\.claude\skills\qa-report`。
+不用自己複製檔案，請 Claude 幫你裝：
 
-不想手動複製的話，開 PowerShell 貼上這兩行：
+1. 用檔案總管打開 `qa-report-main` 資料夾，在上方的網址列輸入 `cmd` 再按 Enter，會跳出一個黑色視窗。
+2. 在黑色視窗輸入 `claude` 再按 Enter，啟動 Claude Code。
+3. 輸入這句話：
 
-```powershell
-New-Item -ItemType Directory -Force "$env:USERPROFILE\.claude\skills\qa-report"
-Copy-Item "D:\qa-report-main\skill\*" "$env:USERPROFILE\.claude\skills\qa-report" -Recurse -Force
-```
+   ```
+   請閱讀 INSTALL.md，幫我安裝這個 skill
+   ```
 
-複製完，把 Claude Code 關掉重開。
+4. 它會問你要不要允許執行指令，按允許。看到「安裝完成」就好了。
+
+![安裝示意圖：在命令提示字元輸入 claude，再請它閱讀 INSTALL.md 來安裝](docs/images/install.png)
+
+這個視窗不要關，下一步繼續用。
+
+想知道它實際做了什麼，可以打開 `INSTALL.md` 看：它只是把 `skill` 資料夾複製到 Claude Code 放技能的位置，不會安裝其他軟體。
 
 ### 第 3 步：看一下要檢查的網頁
 
-練習用的網頁在 `D:\qa-report-main\examples\demo-page\index.html`，用瀏覽器打開長這樣：
+練習用的網頁在 `qa-report-main` 資料夾裡的 `examples\demo-page\index.html`，用瀏覽器打開長這樣：
 
 ![練習用的網頁：一間虛構咖啡店的介紹頁](docs/images/demo-page.png)
 
@@ -42,11 +49,13 @@ Copy-Item "D:\qa-report-main\skill\*" "$env:USERPROFILE\.claude\skills\qa-report
 
 ### 第 4 步：請它檢查
 
-在 Claude Code 輸入這一行：
+在剛才那個視窗裡輸入這一行：
 
 ```
-/qa-report D:\qa-report-main\examples\demo-page\index.html 檢查這個網頁有沒有簡體字
+/qa-report examples\demo-page\index.html 檢查這個網頁有沒有簡體字
 ```
+
+如果輸入後沒有反應，把視窗關掉，照第 2 步重新打開 `cmd` 和 `claude` 再試一次。
 
 接下來不用做任何事。它會自己開瀏覽器、讀畫面上的字、截圖，大約一分鐘後回覆類似這樣的內容：
 
@@ -155,7 +164,9 @@ Copy-Item "D:\qa-report-main\skill\*" "$env:USERPROFILE\.claude\skills\qa-report
 
 需要 Claude Code、Node 22 以上，以及電腦上有 Edge 或 Chrome。
 
-把 `skill\` 資料夾裡的內容複製到 `%USERPROFILE%\.claude\skills\qa-report\`，重開 Claude Code 就能用。不用另外安裝任何套件。
+在這個資料夾啟動 Claude Code，跟它說「請閱讀 INSTALL.md，幫我安裝這個 skill」即可，詳細步驟見上面的第 2 步。
+
+想自己動手的話，把 `skill\` 資料夾裡的內容複製到 `%USERPROFILE%\.claude\skills\qa-report\` 就好。不用另外安裝任何套件。
 
 ## 要注意的事
 
