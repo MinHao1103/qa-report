@@ -1,6 +1,7 @@
 # QA 報告與截圖可能含測試畫面，不進版控
 qa-reports/
 reports/
+QA-Workspace/
 screenshots/
 *.png
 

@@ -8,14 +8,14 @@
 
 ### 第 1 步：下載
 
-按綠色的 **Code** 按鈕，選 **Download ZIP**，解壓縮到 D 槽，得到 `D:\qa-report-main`。
+按綠色的 **Code** 按鈕，選 **Download ZIP**，解壓縮後把 `qa-report-main` 資料夾放到 C 槽或 D 槽。下面的說明以放在 D 槽為例，也就是 `D:\qa-report-main`；放在 C 槽的話，路徑裡的 `D:` 請自行換成 `C:`。
 
 ### 第 2 步：安裝
 
-1. 用檔案總管打開 `D:\qa-report-main`，在網址列輸入 `cmd` 按 Enter。
+1. 用檔案總管打開 `D:\qa-report-main`，在網址列輸入 `cmd` 按 Enter。如果打開後裡面只有另一個 `qa-report-main` 資料夾，請再點進去，要在看得到 `INSTALL.md` 的那一層。
 2. 輸入 `claude` 按 Enter。
 3. 輸入：`請閱讀 INSTALL.md，幫我安裝這個 skill`
-4. 看到「安裝完成」就好了。
+4. 看到「安裝完成」就好了。它會順便在 `qa-report-main` 裡面建好放報告的資料夾 `QA-Workspace`，並告訴你位置。
 
 ![安裝示意圖](docs/images/install.png)
 
@@ -36,13 +36,14 @@
 
 ## 要用的時候
 
-skill 裝好之後，在電腦上任何資料夾啟動 Claude Code 都能用 `/qa-report`。報告會存在「你啟動 Claude Code 的那個資料夾」裡，所以建議準備一個專門放報告的資料夾，以後都從那裡啟動。
+報告固定存在安裝時建好的 `D:\qa-report-main\QA-Workspace` 裡。建議以後都從這個資料夾啟動 Claude Code；從其他資料夾啟動也能用 `/qa-report`，報告一樣會存到這裡。
 
-### 準備一個專用資料夾
+安裝後請不要搬動或改名 `qa-report-main`，搬了就要重新安裝一次。之後要更新 skill 時，用新下載的檔案覆蓋就好，不要把整個 `qa-report-main` 刪掉，否則裡面的報告會一起不見。
 
-1. 在你喜歡的位置建立一個資料夾，例如 `D:\QA-Workspace`。
-2. 用檔案總管打開它，在網址列輸入 `cmd` 按 Enter，再輸入 `claude` 按 Enter。
-3. 輸入指令。先用練習網頁試一次：
+### 開始測試
+
+1. 用檔案總管打開 `D:\qa-report-main\QA-Workspace`，在網址列輸入 `cmd` 按 Enter，再輸入 `claude` 按 Enter。
+2. 輸入指令。先用練習網頁試一次：
 
    ```
    /qa-report D:\qa-report-main\examples\demo-page\index.html 檢查這個網頁有沒有簡體字
@@ -64,7 +65,7 @@ skill 裝好之後，在電腦上任何資料夾啟動 Claude Code 都能用 `/q
 每測一次，`reports` 底下會多一個以日期時間開頭的資料夾，裡面的檔案照產生順序編號：
 
 ```
-D:\QA-Workspace\
+D:\qa-report-main\QA-Workspace\
 └─ reports\
    ├─ 20261117-103321-demo-page\
    │  ├─ 1_plan.md             測試前寫的計畫
@@ -76,5 +77,5 @@ D:\QA-Workspace\
 ### 其他
 
 - **要登入的網站**：它會跳出瀏覽器視窗讓你自己登入。
-- **要參考的文件**：放進 `D:\QA-Workspace\docs\`，在指令裡提到檔名。
+- **要參考的文件**：放進 `D:\qa-report-main\QA-Workspace\docs\`，在指令裡提到檔名。
 - **請只用測試帳號和測試資料**：畫面和截圖會送給 AI 判斷。
