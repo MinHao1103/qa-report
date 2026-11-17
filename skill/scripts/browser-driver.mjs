@@ -14,7 +14,7 @@
  *   node browser-driver.mjs start --out <截圖目錄> [--allow host1,host2] [--viewport 390x844] [--headed] [--browser <路徑>]
  *   node browser-driver.mjs open <url>
  *   node browser-driver.mjs click <selector>
- *   node browser-driver.mjs fill <selector> <值｜env:變數名>
+ *   node browser-driver.mjs fill <selector> <值｜env:變數名> [--typed]
  *   node browser-driver.mjs press <Enter|Tab|Escape|Delete|Backspace|ArrowDown|ArrowUp>
  *   node browser-driver.mjs wait <selector｜毫秒>
  *   node browser-driver.mjs text | elements | console | network | back | reload | status
@@ -24,7 +24,8 @@
  *   node browser-driver.mjs stop
  *
  * selector 可用 CSS selector，或以 text= 開頭依可見文字比對（例如 text=登入）。
- * 密碼欄位只接受 env: 形式的值，避免密碼出現在指令列或步驟檔。
+ * 密碼欄位預設只接受 env: 形式的值。使用者在對話中直接提供測試密碼時，
+ * 指令要加 --typed 表示這是刻意的；步驟檔會留在報告目錄，所以不接受 --typed。
  *
  * @author hao.hsieh
  * @since 2026-11-16
@@ -596,8 +597,8 @@ class BrowserSession {
       case 'fill': {
         const probe = await this.locate(cmd.selector, 'rect');
         if (probe.disabled) throw new Error(`element is disabled: ${cmd.selector}`);
-        if (probe.type === 'password' && !cmd.fromEnv) {
-          throw new Error('password fields only accept env:NAME values');
+        if (probe.type === 'password' && !cmd.fromEnv && !cmd.typed) {
+          throw new Error('password fields need env:NAME, or --typed for a test password the user gave in chat');
         }
         if (probe.tag === 'select') {
           const set = await this.locate(cmd.selector, 'option', cmd.value);
@@ -752,7 +753,7 @@ async function serve(sessionDir) {
 function parseArgs(argv) {
   const flags = {};
   const rest = [];
-  const booleans = new Set(['headed', 'full']);
+  const booleans = new Set(['headed', 'full', 'typed']);
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (!arg.startsWith('--')) {
@@ -911,8 +912,8 @@ function buildCommand(action, rest, flags) {
       need(1, 'click <selector>');
       return { action, selector: rest[0] };
     case 'fill':
-      need(2, 'fill <selector> <value|env:NAME>');
-      return { action, selector: rest[0], value: resolveValue(rest[1]), fromEnv: isEnvRef(rest[1]) };
+      need(2, 'fill <selector> <value|env:NAME> [--typed]');
+      return { action, selector: rest[0], value: resolveValue(rest[1]), fromEnv: isEnvRef(rest[1]), typed: !!flags.typed };
     case 'press':
       need(1, 'press <key>');
       return { action, key: rest[0] };
@@ -979,7 +980,7 @@ async function main() {
       const results = [];
       for (const step of steps) {
         const cmd = step.action === 'fill'
-          ? { ...step, value: resolveValue(step.value), fromEnv: isEnvRef(step.value) }
+          ? { ...step, value: resolveValue(step.value), fromEnv: isEnvRef(step.value), typed: false }
           : step;
         const result = await dispatch(cmd);
         results.push(result);
