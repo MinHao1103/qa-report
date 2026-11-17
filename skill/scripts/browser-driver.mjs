@@ -12,20 +12,19 @@
  *
  * 用法：
  *   node browser-driver.mjs start --out <截圖目錄> [--allow host1,host2] [--viewport 390x844] [--headed] [--browser <路徑>]
- *   node browser-driver.mjs open <url>
+ *   node browser-driver.mjs open <url｜本機 .html 檔案路徑>
  *   node browser-driver.mjs click <selector>
- *   node browser-driver.mjs fill <selector> <值｜env:變數名> [--typed]
+ *   node browser-driver.mjs fill <selector> <值> [--typed]
  *   node browser-driver.mjs press <Enter|Tab|Escape|Delete|Backspace|ArrowDown|ArrowUp>
  *   node browser-driver.mjs wait <selector｜毫秒>
  *   node browser-driver.mjs text | elements | console | network | back | reload | status
  *   node browser-driver.mjs shot <檔名> [--full]
  *   node browser-driver.mjs run <steps.json>
- *   node browser-driver.mjs hasenv <變數名>
  *   node browser-driver.mjs stop
  *
  * selector 可用 CSS selector，或以 text= 開頭依可見文字比對（例如 text=登入）。
- * 密碼欄位預設只接受 env: 形式的值。使用者在對話中直接提供測試密碼時，
- * 指令要加 --typed 表示這是刻意的；步驟檔會留在報告目錄，所以不接受 --typed。
+ * 密碼欄位預設拒絕輸入，通常由使用者在視窗中自行登入。使用者在對話中直接提供測試密碼時，
+ * 指令要加 --typed 表示這是刻意的；步驟檔會留在報告目錄，所以不能用來填密碼。
  *
  * @author hao.hsieh
  * @since 2026-11-16
@@ -37,7 +36,7 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT_DIR = path.join(os.tmpdir(), 'qa-report-driver');
 const CURRENT_FILE = path.join(ROOT_DIR, 'current.json');
@@ -164,6 +163,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 function stripUrl(raw) {
   try {
     const u = new URL(raw);
+    if (u.protocol === 'file:') return `file:.../${path.basename(decodeURIComponent(u.pathname))}`;
     if (u.protocol !== 'http:' && u.protocol !== 'https:') return `${u.protocol}...`;
     return u.origin + u.pathname + u.hash.split('?')[0];
   } catch {
@@ -360,6 +360,11 @@ class BrowserSession {
     try {
       const u = new URL(raw);
       if (u.protocol === 'about:' || u.protocol === 'data:' || u.protocol === 'blob:') return true;
+      // 本機檔案只允許 HTML，讓靜態網頁不用架站也能測。
+      if (u.protocol === 'file:') {
+        const lower = u.pathname.toLowerCase();
+        return lower.endsWith('.html') || lower.endsWith('.htm');
+      }
       return this.allowed.has(u.hostname);
     } catch {
       return false;
@@ -597,8 +602,8 @@ class BrowserSession {
       case 'fill': {
         const probe = await this.locate(cmd.selector, 'rect');
         if (probe.disabled) throw new Error(`element is disabled: ${cmd.selector}`);
-        if (probe.type === 'password' && !cmd.fromEnv && !cmd.typed) {
-          throw new Error('password fields need env:NAME, or --typed for a test password the user gave in chat');
+        if (probe.type === 'password' && !cmd.typed) {
+          throw new Error('password fields need --typed, for a test password the user gave in chat');
         }
         if (probe.tag === 'select') {
           const set = await this.locate(cmd.selector, 'option', cmd.value);
@@ -893,7 +898,7 @@ async function stop() {
 }
 
 /**
- * 把指令列參數轉成動作物件。fill 的值以 env: 開頭時改讀環境變數，避免密碼出現在指令列。
+ * 把指令列參數轉成動作物件。
  *
  * @param {string} action 動作名稱
  * @param {string[]} rest 位置參數
@@ -906,14 +911,14 @@ function buildCommand(action, rest, flags) {
   };
   switch (action) {
     case 'open':
-      need(1, 'open <url>');
-      return { action, url: rest[0] };
+      need(1, 'open <url|path to .html>');
+      return { action, url: toUrl(rest[0]) };
     case 'click':
       need(1, 'click <selector>');
       return { action, selector: rest[0] };
     case 'fill':
-      need(2, 'fill <selector> <value|env:NAME> [--typed]');
-      return { action, selector: rest[0], value: resolveValue(rest[1]), fromEnv: isEnvRef(rest[1]), typed: !!flags.typed };
+      need(2, 'fill <selector> <value> [--typed]');
+      return { action, selector: rest[0], value: rest[1], typed: !!flags.typed };
     case 'press':
       need(1, 'press <key>');
       return { action, key: rest[0] };
@@ -937,22 +942,16 @@ function buildCommand(action, rest, flags) {
 }
 
 /**
- * @param {unknown} value 指令或步驟檔中的值
- * @return {boolean} 是否為 env: 形式
+ * 把本機檔案路徑轉成 file: 網址，其他輸入原樣回傳。
+ *
+ * @param {string} target 網址或本機檔案路徑
+ * @return {string} 可供瀏覽器開啟的網址
  */
-function isEnvRef(value) {
-  return typeof value === 'string' && value.startsWith('env:');
-}
-
-/**
- * @param {string} value 原始值，或 env:變數名
- * @return {string} 實際要輸入的值
- */
-function resolveValue(value) {
-  if (!isEnvRef(value)) return value;
-  const name = value.slice(4);
-  if (process.env[name] === undefined) throw new Error(`environment variable not set: ${name}`);
-  return process.env[name];
+function toUrl(target) {
+  if (target.includes('://') || /^(about|data|blob):/i.test(target)) return target;
+  const resolved = path.resolve(target);
+  if (!fs.existsSync(resolved)) throw new Error(`file not found: ${path.basename(resolved)}`);
+  return pathToFileURL(resolved).href;
 }
 
 /** 指令列進入點。 */
@@ -971,17 +970,14 @@ async function main() {
       output = await start(flags);
     } else if (action === 'stop') {
       output = await stop();
-    } else if (action === 'hasenv') {
-      if (!rest[0]) throw new Error('usage: hasenv <NAME>');
-      output = { ok: true, action, name: rest[0], set: !!process.env[rest[0]] };
     } else if (action === 'run') {
       if (!rest[0]) throw new Error('usage: run <steps.json>');
       const steps = JSON.parse(fs.readFileSync(rest[0], 'utf8'));
       const results = [];
       for (const step of steps) {
-        const cmd = step.action === 'fill'
-          ? { ...step, value: resolveValue(step.value), fromEnv: isEnvRef(step.value), typed: false }
-          : step;
+        // 步驟檔會留在報告目錄，不允許用來填密碼。
+        let cmd = step.action === 'fill' ? { ...step, typed: false } : step;
+        if (cmd.action === 'open') cmd = { ...cmd, url: toUrl(cmd.url) };
         const result = await dispatch(cmd);
         results.push(result);
         if (!result.ok) break;
