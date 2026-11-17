@@ -26,15 +26,16 @@
    - 目的資料夾裡至少有這五個檔案：`SKILL.md`、`drivers\README.md`、`drivers\web.md`、`scripts\browser-driver.mjs`、`templates\report-template.md`。
    - 執行 `node "$env:USERPROFILE\.claude\skills\qa-report\scripts\browser-driver.mjs" status`。預期的結果是回傳的 JSON 裡 `error` 為 `no session running. run "start" first`，而且結束代碼是 1。這代表程式可以執行，不是安裝失敗，不要重試。
 
-4. **回報**：用一兩句話告訴使用者安裝完成，並告訴他接下來可以在同一個視窗輸入：
+4. **回報**：用一兩句話告訴使用者安裝完成，這個視窗可以關掉，並告訴他接下來要做的兩件事：
 
-   ```
-   /qa-report examples\demo-page\index.html 檢查這個網頁有沒有簡體字
-   ```
+   - 建立一個專門放 QA 報告的工作資料夾，建議叫 `QA-Workspace`，放在 D 槽或 C 槽（例如 `D:\QA-Workspace`）。以後都從那個資料夾啟動 Claude Code，報告會存在裡面。
+   - 在那個資料夾啟動 Claude Code 後，可以用練習網頁試一次。指令裡的路徑請換成本資料夾底下該檔案的完整路徑再告訴使用者：
 
-   這個相對路徑只有在 Claude Code 是從本資料夾啟動時才有效；不是的話，請把路徑換成本資料夾底下該檔案的完整路徑再告訴使用者。
+     ```
+     /qa-report <本資料夾的完整路徑>\examples\demo-page\index.html 檢查這個網頁有沒有簡體字
+     ```
 
-   如果輸入後沒有反應，請他把 Claude Code 關掉重開一次。
+   不要替使用者建立工作資料夾，位置和名稱由使用者決定。
 
 ## 不要做的事
 
