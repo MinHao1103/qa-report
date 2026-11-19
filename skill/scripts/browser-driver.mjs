@@ -11,7 +11,7 @@
  *   - 閒置逾時自動結束，不留常駐程序。
  *
  * 用法：
- *   node browser-driver.mjs start --out <截圖目錄> [--allow host1,host2] [--viewport 390x844] [--headed] [--browser <路徑>]
+ *   node browser-driver.mjs start --out <截圖目錄> [--allow host1,host2] [--viewport 390x844] [--headless] [--browser <路徑>]
  *   node browser-driver.mjs open <url｜本機 .html 檔案路徑>
  *   node browser-driver.mjs click <selector>
  *   node browser-driver.mjs fill <selector> <值> [--typed]
@@ -758,7 +758,7 @@ async function serve(sessionDir) {
 function parseArgs(argv) {
   const flags = {};
   const rest = [];
-  const booleans = new Set(['headed', 'full', 'typed']);
+  const booleans = new Set(['headed', 'headless', 'full', 'typed']);
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (!arg.startsWith('--')) {
@@ -808,7 +808,7 @@ async function start(flags) {
   fs.mkdirSync(path.join(sessionDir, 'profile'), { recursive: true });
   const config = {
     browser,
-    headed: !!flags.headed,
+    headed: !flags.headless,
     viewport,
     allow: [...DEFAULT_ALLOWED_HOSTS, ...extraHosts],
     outDir: path.resolve(String(flags.out)),
